@@ -1,0 +1,9 @@
+{
+    "java.project.sourcePaths": [
+        "."
+    ],
+    "java.project.referencedLibraries": [
+        "c:\\Users\\26219\\Downloads\\jakarta.servlet-api-6.0.0.jar"
+    ],
+    "spring.initializr.serviceUrl": ""
+}

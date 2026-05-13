@@ -1,0 +1,154 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.app-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: #f5f5f5;
+  align-items: center;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.search {
+  display: flex;
+  gap: 6px;
+}
+
+input {
+  width: 300px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+button {
+  padding: 8px 14px;
+  background: #409eff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.login-btn {
+  padding: 8px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.welcome-msg {
+  color: #333;
+  font-weight: bold;
+}
+
+.logout-btn {
+  padding: 6px 16px;
+  background: #f56c6c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.logout-btn:hover {
+  background: #f78989;
+}
+
+.nav {
+  display: flex;
+  gap: 22px;
+  padding: 12px 20px;
+  background: #333;
+  color: white;
+}
+
+.nav span {
+  cursor: pointer;
+}
+
+.banner {
+  height: 300px;
+  background: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  margin: 10px 0;
+}
+
+.goods-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 10px;
+}
+
+.goods-item {
+  width: calc(25% - 12px);
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.pic {
+  height: 160px;
+  background: #f9f9f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.title {
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.price {
+  color: red;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.buy {
+  width: 100%;
+  background: #ff6f6f;
+}
+
+.footer {
+  text-align: center;
+  padding: 20px;
+  background: #f5f5f5;
+  margin-top: 20px;
+}

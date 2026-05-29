@@ -1,31 +1,37 @@
-# Python 缓存与字节码
-__pycache__/
-*.py[cod]
-*.pyo
-*$py.class
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-
-# 虚拟环境
-.venv/
-venv/
-env/
-
 # IDE
 .idea/
 .vscode/
+*.iml
 
-# 评测产物
-demo/results/
-results/
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
 
-# 含真实密钥的本地配置副本（建议密钥走环境变量；如必须落盘则放此名）
-demo/server/config/config.local.json
-demo/server/config/*.secret.json
+# Node
+node_modules/
+package-lock.json
 
-# 操作系统/工具临时文件
+# Build outputs
+out/
+target/
+classes/
+
+# OS
 .DS_Store
 Thumbs.db
-*.log
-_smoke_*.py
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# Large files (will be added via Git LFS later)
+demo/server/data/cargo_dataset.jsonl

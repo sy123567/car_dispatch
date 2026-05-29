@@ -33,5 +33,4 @@ Thumbs.db
 *.swp
 *~
 
-# Large files (will be added via Git LFS later)
-demo/server/data/cargo_dataset.jsonl
+

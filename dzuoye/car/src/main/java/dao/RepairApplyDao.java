@@ -8,6 +8,15 @@ import util.DBUtil;
 
 public class RepairApplyDao {
 
+    /** 可空整型写入：值为 null 时写入 SQL NULL，避免 setInt 对 null 自动拆箱抛 NPE。 */
+    private static void setNullableInt(PreparedStatement pstmt, int idx, Integer val) throws SQLException {
+        if (val == null) {
+            pstmt.setNull(idx, Types.INTEGER);
+        } else {
+            pstmt.setInt(idx, val);
+        }
+    }
+
     public RepairApply findById(String orderNo) {
         String sql = "SELECT * FROM `维修申请` WHERE `工单号` = ?";
         Connection conn = null;
@@ -58,14 +67,14 @@ public class RepairApplyDao {
             conn = DBUtil.getConnection();
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, apply.getWorkOrderNo());
-            pstmt.setInt(2, apply.getApplicantId());
-            pstmt.setInt(3, apply.getCarId());
+            setNullableInt(pstmt, 2, apply.getApplicantId());
+            setNullableInt(pstmt, 3, apply.getCarId());
             pstmt.setTimestamp(4, apply.getApplyTime() != null ? Timestamp.valueOf(apply.getApplyTime()) : null);
             pstmt.setString(5, apply.getFaultDesc());
             pstmt.setString(6, apply.getRepairUnitName());
-            pstmt.setInt(7, apply.getRepairProjectId());
+            setNullableInt(pstmt, 7, apply.getRepairProjectId());
             pstmt.setBigDecimal(8, apply.getTotalCost());
-            pstmt.setInt(9, apply.getApproverId());
+            setNullableInt(pstmt, 9, apply.getApproverId());
             pstmt.setString(10, apply.getApproveStatus());
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -83,14 +92,14 @@ public class RepairApplyDao {
         try {
             conn = DBUtil.getConnection();
             pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, apply.getApplicantId());
-            pstmt.setInt(2, apply.getCarId());
+            setNullableInt(pstmt, 1, apply.getApplicantId());
+            setNullableInt(pstmt, 2, apply.getCarId());
             pstmt.setTimestamp(3, apply.getApplyTime() != null ? Timestamp.valueOf(apply.getApplyTime()) : null);
             pstmt.setString(4, apply.getFaultDesc());
             pstmt.setString(5, apply.getRepairUnitName());
-            pstmt.setInt(6, apply.getRepairProjectId());
+            setNullableInt(pstmt, 6, apply.getRepairProjectId());
             pstmt.setBigDecimal(7, apply.getTotalCost());
-            pstmt.setInt(8, apply.getApproverId());
+            setNullableInt(pstmt, 8, apply.getApproverId());
             pstmt.setString(9, apply.getApproveStatus());
             pstmt.setString(10, apply.getWorkOrderNo());
             return pstmt.executeUpdate() > 0;

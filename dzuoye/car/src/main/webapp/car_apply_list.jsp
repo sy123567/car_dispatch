@@ -592,6 +592,12 @@
 
     <!-- 主内容区 -->
     <main class="main-content">
+        <% if (request.getAttribute("message") != null) { %>
+            <div style="margin:0 0 16px; padding:12px 16px; background:rgba(52,199,89,.15); border:1px solid rgba(52,199,89,.4); border-radius:10px; color:#1f8a3b;"><%= request.getAttribute("message") %></div>
+        <% } %>
+        <% if (request.getAttribute("error") != null) { %>
+            <div style="margin:0 0 16px; padding:12px 16px; background:#fee2e2; border:1px solid #fca5a5; border-radius:10px; color:#dc2626;"><%= request.getAttribute("error") %></div>
+        <% } %>
         <div class="toolbar">
             <button class="btn-primary" onclick="location.href='<%= request.getContextPath() %>/carApply?action=add'">
                 <span>📝</span>新建申请

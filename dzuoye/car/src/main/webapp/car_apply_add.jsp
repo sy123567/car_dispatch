@@ -210,7 +210,7 @@
                 </div>
 
                 <div class="btn-group">
-                    <button type="button" class="btn btn-secondary" onclick="location.href='<%= request.getContextPath() %>/carApply?action=list'">取消</button>
+                    <button type="button" class="btn btn-secondary" onclick="location.href='<%= request.getContextPath() %>/carApply?action=myList'">取消</button>
                     <button type="submit" class="btn btn-primary">提交申请</button>
                 </div>
             </form>

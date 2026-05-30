@@ -20,10 +20,10 @@ public class DriverServlet extends HttpServlet {
         resp.setContentType("text/html;charset=UTF-8");
 
         String action = req.getParameter("action");
-        if ("list".equals(action) || action == null) {
-            listDrivers(req, resp);
-        } else if ("delete".equals(action)) {
+        if ("delete".equals(action)) {
             deleteDriver(req, resp);
+        } else {
+            listDrivers(req, resp);
         }
     }
 
@@ -53,12 +53,8 @@ public class DriverServlet extends HttpServlet {
         driver.setContact(req.getParameter("contact"));
         driver.setDriverLicenseNo(req.getParameter("driverLicenseNo"));
         driver.setQualificationNo(req.getParameter("qualificationNo"));
-        try {
-            driver.setDriverStatusId(Integer.parseInt(req.getParameter("driverStatusId")));
-            driver.setUserId(Integer.parseInt(req.getParameter("userId")));
-        } catch (Exception e) {
-            driver.setDriverStatusId(1);
-        }
+        driver.setDriverStatusId(parseIntOrDefault(req.getParameter("driverStatusId"), 1));
+        driver.setUserId(parseIntOrNull(req.getParameter("userId")));
         boolean success = driverService.addDriver(driver);
         req.setAttribute("message", success ? "添加成功" : "添加失败");
         listDrivers(req, resp);
@@ -72,11 +68,8 @@ public class DriverServlet extends HttpServlet {
         driver.setContact(req.getParameter("contact"));
         driver.setDriverLicenseNo(req.getParameter("driverLicenseNo"));
         driver.setQualificationNo(req.getParameter("qualificationNo"));
-        try {
-            driver.setDriverStatusId(Integer.parseInt(req.getParameter("driverStatusId")));
-        } catch (Exception e) {
-            driver.setDriverStatusId(1);
-        }
+        driver.setDriverStatusId(parseIntOrDefault(req.getParameter("driverStatusId"), 1));
+        driver.setUserId(parseIntOrNull(req.getParameter("userId")));
         boolean success = driverService.updateDriver(driver);
         req.setAttribute("message", success ? "更新成功" : "更新失败");
         listDrivers(req, resp);
@@ -87,5 +80,21 @@ public class DriverServlet extends HttpServlet {
         boolean success = driverService.deleteDriver(id);
         req.setAttribute("message", success ? "删除成功" : "删除失败");
         listDrivers(req, resp);
+    }
+
+    private int parseIntOrDefault(String s, int def) {
+        try {
+            return Integer.parseInt(s);
+        } catch (Exception e) {
+            return def;
+        }
+    }
+
+    private Integer parseIntOrNull(String s) {
+        try {
+            return Integer.parseInt(s);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

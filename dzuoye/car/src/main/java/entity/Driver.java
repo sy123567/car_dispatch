@@ -41,6 +41,9 @@ public class Driver {
     @Column(name = "司机状态")
     private Integer driverStatusId;
 
+    @Transient
+    private String statusName;
+
     public Driver() {
     }
 
@@ -122,5 +125,13 @@ public class Driver {
 
     public void setDriverStatusId(Integer driverStatusId) {
         this.driverStatusId = driverStatusId;
+    }
+
+    public String getStatusName() {
+        return statusName;
+    }
+
+    public void setStatusName(String statusName) {
+        this.statusName = statusName;
     }
 }

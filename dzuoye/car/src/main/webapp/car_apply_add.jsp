@@ -142,7 +142,7 @@
 
                 <div class="form-group">
                     <label>用车原因</label>
-                    <select class="form-control" name="reason" id="reasonSelect" onchange="updateReasonInput()" style="margin-bottom: 8px;">
+                    <select class="form-control" id="reasonSelect" onchange="updateReasonInput()" style="margin-bottom: 8px;">
                         <option value="">-- 选择用车原因模板 --</option>
                         <option value="客户拜访">客户拜访</option>
                         <option value="商务出差">商务出差</option>

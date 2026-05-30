@@ -104,3 +104,21 @@ BEGIN
     END IF;
 END//
 DELIMITER ;
+
+-- 8. 演示数据:维修单位 & 维修项目(供司机报修时下拉选择;维修单位名被"维修申请"外键引用)
+INSERT INTO `维修单位` (`单位名`,`单位地址`,`联系方式`)
+SELECT * FROM (
+    SELECT '广汽4S维修中心' n,'广州市天河区xx路1号' a,'020-88880001' c
+    UNION ALL SELECT '东风专修厂','广州市白云区xx路2号','020-88880002'
+    UNION ALL SELECT '中通汽车维修服务站','广州市番禺区xx路3号','020-88880003'
+) t
+WHERE NOT EXISTS (SELECT 1 FROM `维修单位`);
+
+INSERT INTO `维修项目` (`项目类型`,`单价`)
+SELECT * FROM (
+    SELECT '常规保养' t, 300.00 p
+    UNION ALL SELECT '轮胎更换', 800.00
+    UNION ALL SELECT '发动机维修', 2500.00
+    UNION ALL SELECT '钣金喷漆', 1500.00
+) x
+WHERE NOT EXISTS (SELECT 1 FROM `维修项目`);

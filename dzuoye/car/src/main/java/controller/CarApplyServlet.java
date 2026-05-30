@@ -100,11 +100,14 @@ public class CarApplyServlet extends HttpServlet {
 
         boolean success = carApplyService.submitApply(apply);
         if (success) {
-            req.setAttribute("message", "申请提交成功");
+            req.setAttribute("message", "申请提交成功，已进入待审批");
+            // 提交成功后返回员工本人的申请列表，立即可见新提交的申请
+            myApplies(req, resp);
         } else {
             req.setAttribute("error", "申请提交失败");
+            req.setAttribute("apply", apply);
+            req.getRequestDispatcher("/car_apply_add.jsp").forward(req, resp);
         }
-        req.getRequestDispatcher("/car_apply_dispatch.jsp").forward(req, resp);
     }
 
     /**
@@ -190,6 +193,9 @@ public class CarApplyServlet extends HttpServlet {
         }
         List<CarApply> applies = carApplyService.getAppliesByEmployee(currentUser.getId());
         req.setAttribute("applies", applies);
+        req.setAttribute("currentPage", 1);
+        req.setAttribute("totalPages", 1);
+        req.setAttribute("totalCount", applies.size());
         req.getRequestDispatcher("/car_apply_list.jsp").forward(req, resp);
     }
 }

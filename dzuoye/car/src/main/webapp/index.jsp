@@ -1,11 +1,23 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ page import="entity.User" %>
+<%@ page import="entity.CarApply" %>
+<%@ page import="java.util.List" %>
 <%
     User currentUser = (User) session.getAttribute("currentUser");
     if (currentUser == null) {
         response.sendRedirect(request.getContextPath() + "/login");
         return;
     }
+    Object totalApplyAttr = request.getAttribute("totalApply");
+    long totalApply = totalApplyAttr != null ? ((Number) totalApplyAttr).longValue() : 0;
+    Object approvedApplyAttr = request.getAttribute("approvedApply");
+    long approvedApply = approvedApplyAttr != null ? ((Number) approvedApplyAttr).longValue() : 0;
+    Object availableCarsAttr = request.getAttribute("availableCars");
+    long availableCars = availableCarsAttr != null ? ((Number) availableCarsAttr).longValue() : 0;
+    Object onDutyDriversAttr = request.getAttribute("onDutyDrivers");
+    long onDutyDrivers = onDutyDriversAttr != null ? ((Number) onDutyDriversAttr).longValue() : 0;
+    List<CarApply> pendingApplies = (List<CarApply>) request.getAttribute("pendingApplies");
+    List<String[]> recentDispatches = (List<String[]>) request.getAttribute("recentDispatches");
 %>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -689,22 +701,22 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon blue">📝</div>
-                <div class="stat-value">128</div>
-                <div class="stat-label">本月申请</div>
+                <div class="stat-value"><%= totalApply %></div>
+                <div class="stat-label">申请总数</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon green">✅</div>
-                <div class="stat-value">96</div>
+                <div class="stat-value"><%= approvedApply %></div>
                 <div class="stat-label">已审批</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon purple">🚙</div>
-                <div class="stat-value">24</div>
+                <div class="stat-value"><%= availableCars %></div>
                 <div class="stat-label">可用车辆</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon orange">👨‍✈️</div>
-                <div class="stat-value">18</div>
+                <div class="stat-value"><%= onDutyDrivers %></div>
                 <div class="stat-label">在岗司机</div>
             </div>
         </div>
@@ -727,24 +739,18 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <% if (pendingApplies != null && !pendingApplies.isEmpty()) {
+                            for (CarApply apply : pendingApplies) { %>
                         <tr>
-                            <td>CA-2024-001</td>
-                            <td>张三</td>
-                            <td>2024-06-15</td>
-                            <td><span class="status-badge status-pending">待审批</span></td>
+                            <td>CA-<%= String.format("%06d", apply.getApplyId()) %></td>
+                            <td><%= apply.getEmployeeId() %></td>
+                            <td><%= apply.getUseDate() != null ? apply.getUseDate().toLocalDate() : "-" %></td>
+                            <td><span class="status-badge status-pending"><%= apply.getApplyStatus() %></span></td>
                         </tr>
-                        <tr>
-                            <td>CA-2024-002</td>
-                            <td>李四</td>
-                            <td>2024-06-16</td>
-                            <td><span class="status-badge status-pending">待审批</span></td>
-                        </tr>
-                        <tr>
-                            <td>CA-2024-003</td>
-                            <td>王五</td>
-                            <td>2024-06-17</td>
-                            <td><span class="status-badge status-pending">待审批</span></td>
-                        </tr>
+                        <%  }
+                        } else { %>
+                        <tr><td colspan="4" style="text-align:center; color: var(--text-secondary); padding: 30px;">暂无待审批申请</td></tr>
+                        <% } %>
                     </tbody>
                 </table>
             </div>
@@ -765,24 +771,18 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <% if (recentDispatches != null && !recentDispatches.isEmpty()) {
+                            for (String[] d : recentDispatches) { %>
                         <tr>
-                            <td>PD-2024-001</td>
-                            <td>京A-12345</td>
-                            <td>张司机</td>
-                            <td><span class="status-badge status-dispatched">已派车</span></td>
+                            <td><%= d[0] %></td>
+                            <td><%= d[1] %></td>
+                            <td><%= d[2] %></td>
+                            <td><span class="status-badge status-dispatched"><%= d[3] %></span></td>
                         </tr>
-                        <tr>
-                            <td>PD-2024-002</td>
-                            <td>京B-67890</td>
-                            <td>李司机</td>
-                            <td><span class="status-badge status-approved">执行中</span></td>
-                        </tr>
-                        <tr>
-                            <td>PD-2024-003</td>
-                            <td>京C-11111</td>
-                            <td>王司机</td>
-                            <td><span class="status-badge status-approved">执行中</span></td>
-                        </tr>
+                        <%  }
+                        } else { %>
+                        <tr><td colspan="4" style="text-align:center; color: var(--text-secondary); padding: 30px;">暂无派车记录</td></tr>
+                        <% } %>
                     </tbody>
                 </table>
             </div>

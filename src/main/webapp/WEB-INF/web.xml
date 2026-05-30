@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
+
+    <display-name>Car Apply Dispatch Web</display-name>
+
+    <welcome-file-list>
+        <welcome-file>login.jsp</welcome-file>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+
+    <filter>
+        <filter-name>characterEncodingFilter</filter-name>
+        <filter-class>filter.CharacterEncodingFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>characterEncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>loginFilter</filter-name>
+        <filter-class>filter.LoginFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>loginFilter</filter-name>
+        <url-pattern>/index</url-pattern>
+        <url-pattern>/carApply</url-pattern>
+        <url-pattern>/car</url-pattern>
+        <url-pattern>/driver</url-pattern>
+        <url-pattern>/userManage</url-pattern>
+        <url-pattern>/driverTask</url-pattern>
+        <url-pattern>/repair</url-pattern>
+    </filter-mapping>
+
+    <servlet>
+        <servlet-name>loginServlet</servlet-name>
+        <servlet-class>controller.LoginServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>loginServlet</servlet-name>
+        <url-pattern>/login</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>logoutServlet</servlet-name>
+        <servlet-class>controller.LogoutServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>logoutServlet</servlet-name>
+        <url-pattern>/logout</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>indexServlet</servlet-name>
+        <servlet-class>controller.IndexServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>indexServlet</servlet-name>
+        <url-pattern>/index</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>carApplyServlet</servlet-name>
+        <servlet-class>controller.CarApplyServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>carApplyServlet</servlet-name>
+        <url-pattern>/carApply</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>carServlet</servlet-name>
+        <servlet-class>controller.CarServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>carServlet</servlet-name>
+        <url-pattern>/car</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>driverServlet</servlet-name>
+        <servlet-class>controller.DriverServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>driverServlet</servlet-name>
+        <url-pattern>/driver</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>userManageServlet</servlet-name>
+        <servlet-class>controller.UserManageServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>userManageServlet</servlet-name>
+        <url-pattern>/userManage</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>driverTaskServlet</servlet-name>
+        <servlet-class>controller.DriverTaskServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>driverTaskServlet</servlet-name>
+        <url-pattern>/driverTask</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>repairServlet</servlet-name>
+        <servlet-class>controller.RepairServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>repairServlet</servlet-name>
+        <url-pattern>/repair</url-pattern>
+    </servlet-mapping>
+
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+
+</web-app>

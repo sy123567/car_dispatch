@@ -8,7 +8,8 @@
         response.sendRedirect(request.getContextPath() + "/login");
         return;
     }
-    List<Driver> driverList = (List<Driver>) request.getAttribute("driverList");
+    List<Driver> driverList = (List<Driver>) request.getAttribute("drivers");
+    String driverMsg = (String) request.getAttribute("message");
 %>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -578,56 +579,45 @@
     <!-- 主内容区 -->
     <main class="main-content">
         <div class="toolbar">
-            <button class="btn-primary" onclick="location.href='${pageContext.request.contextPath}/driver?action=add'">
+            <button class="btn-primary" onclick="openAddDriver()">
                 <span>➕</span>新增司机
             </button>
-            <div class="search-box">
-                <input type="text" class="search-input" placeholder="搜索司机姓名或电话">
-                <select class="filter-select">
-                    <option value="">全部状态</option>
-                    <option value="在岗">在岗</option>
-                    <option value="任务中">任务中</option>
-                    <option value="休息">休息</option>
-                    <option value="请假">请假</option>
-                </select>
-            </div>
         </div>
+
+        <% if (driverMsg != null) { %>
+            <div style="margin:0 0 16px; padding:12px 16px; background:rgba(52,199,89,.15); border:1px solid rgba(52,199,89,.4); border-radius:10px; color:#1f8a3b;"><%= driverMsg %></div>
+        <% } %>
 
         <div class="data-card">
             <table class="data-table">
                 <thead>
                     <tr>
                         <th>姓名</th>
-                        <th>性别</th>
-                        <th>联系电话</th>
-                        <th>驾龄</th>
+                        <th>工号</th>
+                        <th>联系方式</th>
+                        <th>驾驶证号</th>
+                        <th>从业资格证号</th>
                         <th>状态</th>
-                        <th>入职日期</th>
                         <th>操作</th>
                     </tr>
                 </thead>
                 <tbody>
                     <% if (driverList != null && !driverList.isEmpty()) { %>
-                        <% for (Driver driver : driverList) { %>
+                        <% for (Driver driver : driverList) {
+                            String sn = driver.getStatusName() == null ? "" : driver.getStatusName();
+                            String cls = (sn.equals("在岗") || sn.equals("空闲")) ? "status-available" : (sn.equals("出车") || sn.equals("任务中")) ? "status-busy" : sn.equals("请假") ? "status-leave" : "status-off";
+                        %>
                         <tr>
                             <td><%= driver.getName() != null ? driver.getName() : "-" %></td>
-                            <td><%= driver.getGender() != null ? driver.getGender() : "-" %></td>
-                            <td><%= driver.getPhone() != null ? driver.getPhone() : "-" %></td>
-                            <td><%= driver.getDrivingYears() %>年</td>
-                            <td>
-                                <span class="status-badge 
-                                    <%= driver.getStatusName().equals("在岗") || driver.getStatusName().equals("空闲") ? "status-available" : 
-                                       driver.getStatusName().equals("任务中") ? "status-busy" :
-                                       driver.getStatusName().equals("请假") ? "status-leave" : "status-off" %>">
-                                    <%= driver.getStatusName() %>
-                                </span>
-                            </td>
-                            <td><%= driver.getHireDate() != null ? driver.getHireDate().toLocalDate() : "-" %></td>
+                            <td><%= driver.getEmployeeNo() != null ? driver.getEmployeeNo() : "-" %></td>
+                            <td><%= driver.getContact() != null ? driver.getContact() : "-" %></td>
+                            <td><%= driver.getDriverLicenseNo() != null ? driver.getDriverLicenseNo() : "-" %></td>
+                            <td><%= driver.getQualificationNo() != null ? driver.getQualificationNo() : "-" %></td>
+                            <td><span class="status-badge <%= cls %>"><%= sn.isEmpty() ? "-" : sn %></span></td>
                             <td>
                                 <div class="action-btns">
-                                    <button class="action-btn view">查看</button>
-                                    <button class="action-btn edit">编辑</button>
-                                    <button class="action-btn delete">删除</button>
+                                    <button class="action-btn edit" onclick='openEditDriver(<%= driver.getId() %>, "<%= driver.getName() != null ? driver.getName() : "" %>", "<%= driver.getEmployeeNo() != null ? driver.getEmployeeNo() : "" %>", "<%= driver.getContact() != null ? driver.getContact() : "" %>", "<%= driver.getDriverLicenseNo() != null ? driver.getDriverLicenseNo() : "" %>", "<%= driver.getQualificationNo() != null ? driver.getQualificationNo() : "" %>", <%= driver.getDriverStatusId() %>)'>编辑</button>
+                                    <a class="action-btn delete" href="${pageContext.request.contextPath}/driver?action=delete&id=<%= driver.getId() %>" onclick="return confirm('确认删除该司机?');">删除</a>
                                 </div>
                             </td>
                         </tr>
@@ -637,16 +627,65 @@
                     <% } %>
                 </tbody>
             </table>
-
-            <div class="pagination">
-                <button class="page-btn">上一页</button>
-                <button class="page-btn active">1</button>
-                <button class="page-btn">2</button>
-                <button class="page-btn">3</button>
-                <button class="page-btn">下一页</button>
-            </div>
         </div>
     </main>
+
+    <!-- 新增/编辑司机 弹窗 -->
+    <div id="driverModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:9999; align-items:center; justify-content:center;">
+        <div style="background:#fff; border-radius:16px; padding:28px; width:440px; max-width:92vw; box-shadow:0 20px 60px rgba(0,0,0,.3);">
+            <h3 id="driverModalTitle" style="margin:0 0 18px; color:#1d1d1f;">新增司机</h3>
+            <form action="${pageContext.request.contextPath}/driver" method="post">
+                <input type="hidden" name="action" id="driverAction" value="add">
+                <input type="hidden" name="id" id="driverId">
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <label>姓名<input name="name" id="driverName" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; margin-top:4px;"></label>
+                    <label>工号<input name="employeeNo" id="driverEmployeeNo" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; margin-top:4px;"></label>
+                    <label>联系方式<input name="contact" id="driverContact" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; margin-top:4px;"></label>
+                    <label>驾驶证号<input name="driverLicenseNo" id="driverLicenseNo" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; margin-top:4px;"></label>
+                    <label>从业资格证号<input name="qualificationNo" id="driverQualificationNo" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; margin-top:4px;"></label>
+                    <label>状态
+                        <select name="driverStatusId" id="driverStatusId" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; margin-top:4px;">
+                            <option value="1">在岗</option>
+                            <option value="2">出车</option>
+                            <option value="3">休息</option>
+                            <option value="4">请假</option>
+                        </select>
+                    </label>
+                </div>
+                <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:22px;">
+                    <button type="button" onclick="closeDriverModal()" style="padding:10px 20px; border:1px solid #ddd; background:#fff; border-radius:8px; cursor:pointer;">取消</button>
+                    <button type="submit" class="btn-primary" style="padding:10px 20px;">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        function openAddDriver() {
+            document.getElementById('driverModalTitle').innerText = '新增司机';
+            document.getElementById('driverAction').value = 'add';
+            document.getElementById('driverId').value = '';
+            document.getElementById('driverName').value = '';
+            document.getElementById('driverEmployeeNo').value = '';
+            document.getElementById('driverContact').value = '';
+            document.getElementById('driverLicenseNo').value = '';
+            document.getElementById('driverQualificationNo').value = '';
+            document.getElementById('driverStatusId').value = '1';
+            document.getElementById('driverModal').style.display = 'flex';
+        }
+        function openEditDriver(id, name, empNo, contact, lic, qual, status) {
+            document.getElementById('driverModalTitle').innerText = '编辑司机';
+            document.getElementById('driverAction').value = 'update';
+            document.getElementById('driverId').value = id;
+            document.getElementById('driverName').value = name;
+            document.getElementById('driverEmployeeNo').value = empNo;
+            document.getElementById('driverContact').value = contact;
+            document.getElementById('driverLicenseNo').value = lic;
+            document.getElementById('driverQualificationNo').value = qual;
+            document.getElementById('driverStatusId').value = status;
+            document.getElementById('driverModal').style.display = 'flex';
+        }
+        function closeDriverModal() { document.getElementById('driverModal').style.display = 'none'; }
+    </script>
     <!-- =========================================
          UI/UX PRO MAX ENGINE SCRIPTS
          ========================================= -->

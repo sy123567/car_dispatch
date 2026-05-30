@@ -8,8 +8,11 @@ import util.DBUtil;
 
 public class DriverDao {
 
+    private static final String SELECT_WITH_STATUS =
+            "SELECT d.*, ds.`司机状态` AS `状态名` FROM `司机` d LEFT JOIN `司机状态` ds ON d.`司机状态` = ds.`ID`";
+
     public Driver findById(Integer id) {
-        String sql = "SELECT * FROM `司机` WHERE `ID` = ?";
+        String sql = SELECT_WITH_STATUS + " WHERE d.`ID` = ?";
         Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
@@ -30,7 +33,7 @@ public class DriverDao {
     }
 
     public List<Driver> findAll() {
-        String sql = "SELECT * FROM `司机`";
+        String sql = SELECT_WITH_STATUS + " ORDER BY d.`ID`";
         List<Driver> list = new ArrayList<>();
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -51,7 +54,7 @@ public class DriverDao {
     }
 
     public List<Driver> findByStatus(Integer statusId) {
-        String sql = "SELECT * FROM `司机` WHERE `司机状态` = ?";
+        String sql = SELECT_WITH_STATUS + " WHERE d.`司机状态` = ?";
         List<Driver> list = new ArrayList<>();
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -79,7 +82,7 @@ public class DriverDao {
         try {
             conn = DBUtil.getConnection();
             pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, driver.getUserId());
+            setNullableInt(pstmt, 1, driver.getUserId());
             pstmt.setString(2, driver.getName());
             pstmt.setString(3, driver.getEmployeeNo());
             pstmt.setString(4, driver.getContact());
@@ -87,7 +90,7 @@ public class DriverDao {
             pstmt.setDate(6, driver.getLicenseExpireDate() != null ? new java.sql.Date(driver.getLicenseExpireDate().getTime()) : null);
             pstmt.setString(7, driver.getQualificationNo());
             pstmt.setDate(8, driver.getQualificationExpireDate() != null ? new java.sql.Date(driver.getQualificationExpireDate().getTime()) : null);
-            pstmt.setInt(9, driver.getDriverStatusId());
+            setNullableInt(pstmt, 9, driver.getDriverStatusId());
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -104,7 +107,7 @@ public class DriverDao {
         try {
             conn = DBUtil.getConnection();
             pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, driver.getUserId());
+            setNullableInt(pstmt, 1, driver.getUserId());
             pstmt.setString(2, driver.getName());
             pstmt.setString(3, driver.getEmployeeNo());
             pstmt.setString(4, driver.getContact());
@@ -112,7 +115,7 @@ public class DriverDao {
             pstmt.setDate(6, driver.getLicenseExpireDate() != null ? new java.sql.Date(driver.getLicenseExpireDate().getTime()) : null);
             pstmt.setString(7, driver.getQualificationNo());
             pstmt.setDate(8, driver.getQualificationExpireDate() != null ? new java.sql.Date(driver.getQualificationExpireDate().getTime()) : null);
-            pstmt.setInt(9, driver.getDriverStatusId());
+            setNullableInt(pstmt, 9, driver.getDriverStatusId());
             pstmt.setInt(10, driver.getId());
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -152,6 +155,43 @@ public class DriverDao {
         driver.setQualificationNo(rs.getString("从业资格证号"));
         driver.setQualificationExpireDate(rs.getDate("资格证有效期"));
         driver.setDriverStatusId(rs.getInt("司机状态"));
+        try {
+            driver.setStatusName(rs.getString("状态名"));
+        } catch (SQLException ignore) {
+            // 某些查询不含状态名列
+        }
         return driver;
+    }
+
+    private void setNullableInt(PreparedStatement pstmt, int idx, Integer value) throws SQLException {
+        if (value == null) {
+            pstmt.setNull(idx, java.sql.Types.INTEGER);
+        } else {
+            pstmt.setInt(idx, value);
+        }
+    }
+
+    /**
+     * 查找一名可派车司机(状态为“在岗”或“空闲”)的ID,无则返回 null
+     */
+    public Integer findAvailableDriverId() {
+        String sql = "SELECT d.`ID` FROM `司机` d JOIN `司机状态` ds ON d.`司机状态` = ds.`ID` "
+                + "WHERE ds.`司机状态` IN ('在岗','空闲') ORDER BY d.`ID` LIMIT 1";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
+        return null;
     }
 }

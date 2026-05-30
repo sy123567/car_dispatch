@@ -193,6 +193,27 @@ public class CarApplyDao {
         return false;
     }
 
+    /**
+     * 仅更新申请状态(用于自动派车后置为"已派车")
+     */
+    public boolean updateStatus(Integer applyId, String status) {
+        String sql = "UPDATE `用车申请` SET `申请状态`=? WHERE `申请ID`=?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, status);
+            pstmt.setInt(2, applyId);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt);
+        }
+        return false;
+    }
+
     private CarApply mapResultSet(ResultSet rs) throws SQLException {
         CarApply apply = new CarApply();
         apply.setApplyId(rs.getInt("申请ID"));

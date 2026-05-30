@@ -2,6 +2,8 @@ package service;
 
 import dao.CarApplyDao;
 import dao.CarDispatchDao;
+import dao.CarDao;
+import dao.DriverDao;
 import entity.CarApply;
 import entity.CarDispatch;
 import java.time.LocalDateTime;
@@ -14,6 +16,8 @@ public class CarApplyService {
 
     private CarApplyDao carApplyDao = new CarApplyDao();
     private CarDispatchDao carDispatchDao = new CarDispatchDao();
+    private CarDao carDao = new CarDao();
+    private DriverDao driverDao = new DriverDao();
 
     /**
      * 提交用车申请
@@ -29,8 +33,10 @@ public class CarApplyService {
     }
 
     /**
-     * 审批用车申请
-     * 触发器会自动处理：审批通过后自动派车
+     * 审批用车申请。
+     * 审批通过(状态"已通过"/"审批通过")后,在 Java 端自动派车:
+     * 匹配空闲车辆 + 在岗司机,生成派车单,并将申请状态置为"已派车"。
+     * (原数据库触发器因在自身 AFTER UPDATE 中更新本表而非法,已弃用,改由此处实现)
      */
     public boolean approveApply(Integer applyId, Integer approverId, String comment, String status) {
         CarApply apply = carApplyDao.findById(applyId);
@@ -42,7 +48,39 @@ public class CarApplyService {
         apply.setApplyStatus(status);
         // 自动设置审批时间为当前时间
         apply.setApproveTime(LocalDateTime.now());
-        return carApplyDao.update(apply);
+        boolean updated = carApplyDao.update(apply);
+        if (!updated) {
+            return false;
+        }
+        if ("已通过".equals(status) || "审批通过".equals(status)) {
+            autoDispatch(apply);
+        }
+        return true;
+    }
+
+    /**
+     * 自动派车:为审批通过的申请匹配空闲车辆与在岗司机并生成派车单。
+     * 找不到可用资源时保持"已通过"状态,等待人工调度。
+     */
+    private void autoDispatch(CarApply apply) {
+        if (carDispatchDao.findByApplyId(apply.getApplyId()) != null) {
+            return; // 已派车,避免重复
+        }
+        Integer carId = carDao.findAvailableCarId();
+        Integer driverId = driverDao.findAvailableDriverId();
+        if (carId == null || driverId == null) {
+            return;
+        }
+        CarDispatch dispatch = new CarDispatch();
+        dispatch.setApplyId(apply.getApplyId());
+        dispatch.setCarId(carId);
+        dispatch.setDriverId(driverId);
+        dispatch.setUseDate(apply.getUseDate());
+        dispatch.setReturnDate(apply.getReturnDate());
+        // 插入派车单会触发器自动更新车辆=使用中、司机=出车
+        if (carDispatchDao.insert(dispatch)) {
+            carApplyDao.updateStatus(apply.getApplyId(), "已派车");
+        }
     }
 
     /**

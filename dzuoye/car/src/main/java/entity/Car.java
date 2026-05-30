@@ -34,6 +34,9 @@ public class Car {
     @Column(name = "车辆状态")
     private Integer carStatusId;
 
+    @Transient
+    private String statusName;
+
     @Column(name = "年检到期日")
     @Temporal(TemporalType.DATE)
     private Date inspectionExpireDate;
@@ -123,5 +126,13 @@ public class Car {
 
     public void setInsuranceExpireDate(Date insuranceExpireDate) {
         this.insuranceExpireDate = insuranceExpireDate;
+    }
+
+    public String getStatusName() {
+        return statusName;
+    }
+
+    public void setStatusName(String statusName) {
+        this.statusName = statusName;
     }
 }

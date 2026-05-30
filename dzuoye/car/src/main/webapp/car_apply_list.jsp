@@ -677,7 +677,6 @@
                     Integer currentPage = (Integer) request.getAttribute("currentPage");
                     Integer totalPages = (Integer) request.getAttribute("totalPages");
                     String keyword = (String) request.getAttribute("keyword");
-                    String status = (String) request.getAttribute("status");
                     if (currentPage == null) currentPage = 1;
                     if (totalPages == null) totalPages = 1;
                 %>

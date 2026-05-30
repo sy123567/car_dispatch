@@ -20,10 +20,10 @@ public class CarServlet extends HttpServlet {
         resp.setContentType("text/html;charset=UTF-8");
 
         String action = req.getParameter("action");
-        if ("list".equals(action) || action == null) {
-            listCars(req, resp);
-        } else if ("delete".equals(action)) {
+        if ("delete".equals(action)) {
             deleteCar(req, resp);
+        } else {
+            listCars(req, resp);
         }
     }
 

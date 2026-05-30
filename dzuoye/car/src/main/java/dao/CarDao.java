@@ -8,8 +8,11 @@ import util.DBUtil;
 
 public class CarDao {
 
+    private static final String SELECT_WITH_STATUS =
+            "SELECT c.*, cs.`车辆状态` AS `状态名` FROM `车辆` c LEFT JOIN `车辆状态` cs ON c.`车辆状态` = cs.`ID`";
+
     public Car findById(Integer id) {
-        String sql = "SELECT * FROM `车辆` WHERE `ID` = ?";
+        String sql = SELECT_WITH_STATUS + " WHERE c.`ID` = ?";
         Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
@@ -30,7 +33,7 @@ public class CarDao {
     }
 
     public List<Car> findAll() {
-        String sql = "SELECT * FROM `车辆`";
+        String sql = SELECT_WITH_STATUS + " ORDER BY c.`ID`";
         List<Car> list = new ArrayList<>();
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -51,7 +54,7 @@ public class CarDao {
     }
 
     public List<Car> findByStatus(Integer statusId) {
-        String sql = "SELECT * FROM `车辆` WHERE `车辆状态` = ?";
+        String sql = SELECT_WITH_STATUS + " WHERE c.`车辆状态` = ?";
         List<Car> list = new ArrayList<>();
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -152,6 +155,35 @@ public class CarDao {
         car.setCarStatusId(rs.getInt("车辆状态"));
         car.setInspectionExpireDate(rs.getDate("年检到期日"));
         car.setInsuranceExpireDate(rs.getDate("保险到期日"));
+        try {
+            car.setStatusName(rs.getString("状态名"));
+        } catch (SQLException ignore) {
+            // 某些查询不含状态名列
+        }
         return car;
+    }
+
+    /**
+     * 查找一辆“空闲”状态的车辆ID(用于自动派车),无则返回 null
+     */
+    public Integer findAvailableCarId() {
+        String sql = "SELECT c.`ID` FROM `车辆` c JOIN `车辆状态` cs ON c.`车辆状态` = cs.`ID` "
+                + "WHERE cs.`车辆状态` = '空闲' ORDER BY c.`ID` LIMIT 1";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
+        return null;
     }
 }

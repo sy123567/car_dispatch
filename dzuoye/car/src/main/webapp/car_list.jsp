@@ -8,7 +8,8 @@
         response.sendRedirect(request.getContextPath() + "/login");
         return;
     }
-    List<Car> carList = (List<Car>) request.getAttribute("carList");
+    List<Car> carList = (List<Car>) request.getAttribute("cars");
+    String carMsg = (String) request.getAttribute("message");
 %>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -578,75 +579,115 @@
     <!-- 主内容区 -->
     <main class="main-content">
         <div class="toolbar">
-            <button class="btn-primary" onclick="location.href='${pageContext.request.contextPath}/car?action=add'">
+            <button class="btn-primary" onclick="openAddCar()">
                 <span>➕</span>新增车辆
             </button>
-            <div class="search-box">
-                <input type="text" class="search-input" placeholder="搜索车牌号或车型">
-                <select class="filter-select">
-                    <option value="">全部状态</option>
-                    <option value="空闲">空闲</option>
-                    <option value="使用中">使用中</option>
-                    <option value="维修中">维修中</option>
-                    <option value="已预约">已预约</option>
-                </select>
-            </div>
         </div>
+
+        <% if (carMsg != null) { %>
+            <div style="margin:0 0 16px; padding:12px 16px; background:rgba(52,199,89,.15); border:1px solid rgba(52,199,89,.4); border-radius:10px; color:#1f8a3b;"><%= carMsg %></div>
+        <% } %>
 
         <div class="data-card">
             <table class="data-table">
                 <thead>
                     <tr>
                         <th>车牌号</th>
-                        <th>车型</th>
                         <th>品牌</th>
-                        <th>座位数</th>
+                        <th>车型</th>
+                        <th>排量</th>
+                        <th>行驶证号</th>
                         <th>状态</th>
-                        <th>最后保养日期</th>
+                        <th>年检到期</th>
                         <th>操作</th>
                     </tr>
                 </thead>
                 <tbody>
                     <% if (carList != null && !carList.isEmpty()) { %>
-                        <% for (Car car : carList) { %>
+                        <% for (Car car : carList) {
+                            String sn = car.getStatusName() == null ? "" : car.getStatusName();
+                            String cls = sn.equals("空闲") ? "status-free" : sn.equals("使用中") ? "status-busy" : sn.equals("维修中") ? "status-maintenance" : "status-reserved";
+                        %>
                         <tr>
-                            <td><%= car.getPlateNumber() != null ? car.getPlateNumber() : "-" %></td>
-                            <td><%= car.getCarModel() != null ? car.getCarModel() : "-" %></td>
+                            <td><%= car.getLicensePlate() != null ? car.getLicensePlate() : "-" %></td>
                             <td><%= car.getBrand() != null ? car.getBrand() : "-" %></td>
-                            <td><%= car.getSeatCount() %></td>
-                            <td>
-                                <span class="status-badge 
-                                    <%= car.getStatusName().equals("空闲") ? "status-free" : 
-                                       car.getStatusName().equals("使用中") ? "status-busy" :
-                                       car.getStatusName().equals("维修中") ? "status-maintenance" : "status-reserved" %>">
-                                    <%= car.getStatusName() %>
-                                </span>
-                            </td>
-                            <td><%= car.getLastMaintenanceDate() != null ? car.getLastMaintenanceDate().toLocalDate() : "-" %></td>
+                            <td><%= car.getModel() != null ? car.getModel() : "-" %></td>
+                            <td><%= car.getDisplacement() != null ? car.getDisplacement() : "-" %></td>
+                            <td><%= car.getDrivingLicenseNo() != null ? car.getDrivingLicenseNo() : "-" %></td>
+                            <td><span class="status-badge <%= cls %>"><%= sn.isEmpty() ? "-" : sn %></span></td>
+                            <td><%= car.getInspectionExpireDate() != null ? car.getInspectionExpireDate() : "-" %></td>
                             <td>
                                 <div class="action-btns">
-                                    <button class="action-btn view">查看</button>
-                                    <button class="action-btn edit">编辑</button>
-                                    <button class="action-btn delete">删除</button>
+                                    <button class="action-btn edit" onclick='openEditCar(<%= car.getId() %>, "<%= car.getLicensePlate() %>", "<%= car.getBrand() != null ? car.getBrand() : "" %>", "<%= car.getModel() != null ? car.getModel() : "" %>", "<%= car.getDisplacement() != null ? car.getDisplacement() : "" %>", "<%= car.getDrivingLicenseNo() != null ? car.getDrivingLicenseNo() : "" %>", <%= car.getCarStatusId() %>)'>编辑</button>
+                                    <a class="action-btn delete" href="${pageContext.request.contextPath}/car?action=delete&id=<%= car.getId() %>" onclick="return confirm('确认删除该车辆?');">删除</a>
                                 </div>
                             </td>
                         </tr>
                         <% } %>
                     <% } else { %>
-                        <tr><td colspan="7" style="text-align:center; color: var(--text-secondary); padding: 40px;">暂无车辆数据</td></tr>
+                        <tr><td colspan="8" style="text-align:center; color: var(--text-secondary); padding: 40px;">暂无车辆数据</td></tr>
                     <% } %>
                 </tbody>
             </table>
-
-            <div class="pagination">
-                <button class="page-btn">上一页</button>
-                <button class="page-btn active">1</button>
-                <button class="page-btn">2</button>
-                <button class="page-btn">3</button>
-                <button class="page-btn">下一页</button>
-            </div>
         </div>
     </main>
+
+    <!-- 新增/编辑车辆 弹窗 -->
+    <div id="carModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:9999; align-items:center; justify-content:center;">
+        <div style="background:#fff; border-radius:16px; padding:28px; width:440px; max-width:92vw; box-shadow:0 20px 60px rgba(0,0,0,.3);">
+            <h3 id="carModalTitle" style="margin:0 0 18px; color:#1d1d1f;">新增车辆</h3>
+            <form action="${pageContext.request.contextPath}/car" method="post">
+                <input type="hidden" name="action" id="carAction" value="add">
+                <input type="hidden" name="id" id="carId">
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <label>车牌号<input name="licensePlate" id="carLicensePlate" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; margin-top:4px;"></label>
+                    <label>品牌<input name="brand" id="carBrand" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; margin-top:4px;"></label>
+                    <label>车型<input name="model" id="carModel" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; margin-top:4px;"></label>
+                    <label>排量<input name="displacement" id="carDisplacement" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; margin-top:4px;"></label>
+                    <label>行驶证号<input name="drivingLicenseNo" id="carDrivingLicenseNo" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; margin-top:4px;"></label>
+                    <label>状态
+                        <select name="carStatusId" id="carStatusId" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; margin-top:4px;">
+                            <option value="1">空闲</option>
+                            <option value="2">使用中</option>
+                            <option value="3">维修中</option>
+                            <option value="4">已预约</option>
+                        </select>
+                    </label>
+                </div>
+                <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:22px;">
+                    <button type="button" onclick="closeCarModal()" style="padding:10px 20px; border:1px solid #ddd; background:#fff; border-radius:8px; cursor:pointer;">取消</button>
+                    <button type="submit" class="btn-primary" style="padding:10px 20px;">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        function openAddCar() {
+            document.getElementById('carModalTitle').innerText = '新增车辆';
+            document.getElementById('carAction').value = 'add';
+            document.getElementById('carId').value = '';
+            document.getElementById('carLicensePlate').value = '';
+            document.getElementById('carBrand').value = '';
+            document.getElementById('carModel').value = '';
+            document.getElementById('carDisplacement').value = '';
+            document.getElementById('carDrivingLicenseNo').value = '';
+            document.getElementById('carStatusId').value = '1';
+            document.getElementById('carModal').style.display = 'flex';
+        }
+        function openEditCar(id, plate, brand, model, disp, lic, status) {
+            document.getElementById('carModalTitle').innerText = '编辑车辆';
+            document.getElementById('carAction').value = 'update';
+            document.getElementById('carId').value = id;
+            document.getElementById('carLicensePlate').value = plate;
+            document.getElementById('carBrand').value = brand;
+            document.getElementById('carModel').value = model;
+            document.getElementById('carDisplacement').value = disp;
+            document.getElementById('carDrivingLicenseNo').value = lic;
+            document.getElementById('carStatusId').value = status;
+            document.getElementById('carModal').style.display = 'flex';
+        }
+        function closeCarModal() { document.getElementById('carModal').style.display = 'none'; }
+    </script>
     <!-- =========================================
          UI/UX PRO MAX ENGINE SCRIPTS
          ========================================= -->
